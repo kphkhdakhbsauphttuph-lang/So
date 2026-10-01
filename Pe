@@ -1,0 +1,457 @@
+-- [[ 🐻‍❄️ คัฟเค้กHUB VIP - MOBILE EDITION (HITBOX ADJUSTABLE) 🐻‍❄️ ]] --
+
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+local RandomUIName = "Cupcake_Mobile_" .. HttpService:GenerateGUID(false):sub(1, 8)
+if CoreGui:FindFirstChild(RandomUIName) then CoreGui[RandomUIName]:Destroy() end
+
+local Config = {
+    CorrectKey = "เสี่ยคัฟเค้ก",
+    Camlock = false,
+    CamlockSmoothness = 0.25,
+    ShowFOV = true,
+    FOVRadius = 120,
+    Hitbox = false,
+    HitboxSize = 10,
+    ESP = false,
+    WalkSpeed = 16
+}
+
+-- ⭕ วงกลม FOV
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+FOVCircle.Radius = Config.FOVRadius
+FOVCircle.Color = Color3.fromRGB(0, 243, 255)
+FOVCircle.Thickness = 1.5
+FOVCircle.Filled = false
+FOVCircle.Transparency = 1
+FOVCircle.Visible = Config.ShowFOV
+
+-- GUI Root
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = RandomUIName
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+-- 🔐 KEY FRAME
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "KeyFrame"
+KeyFrame.Parent = ScreenGui
+KeyFrame.BackgroundColor3 = Color3.fromRGB(25, 15, 35)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Position = UDim2.new(0.5, -130, 0.35, 0)
+KeyFrame.Size = UDim2.new(0, 260, 0, 180)
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+
+local KeyCorner = Instance.new("UICorner", KeyFrame)
+KeyCorner.CornerRadius = UDim.new(0, 10)
+
+local KeyStroke = Instance.new("UIStroke", KeyFrame)
+KeyStroke.Color = Color3.fromRGB(0, 243, 255)
+KeyStroke.Thickness = 2
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Parent = KeyFrame
+KeyTitle.BackgroundColor3 = Color3.fromRGB(45, 20, 65)
+KeyTitle.Size = UDim2.new(1, 0, 0, 35)
+KeyTitle.Font = Enum.Font.SourceSansBold
+KeyTitle.Text = "🐻‍❄️🧁 คัฟเค้กHUB (Mobile) 🐻‍‍❄️"
+KeyTitle.TextColor3 = Color3.fromRGB(0, 243, 255)
+KeyTitle.TextSize = 14
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Parent = KeyFrame
+KeyInput.BackgroundColor3 = Color3.fromRGB(35, 20, 50)
+KeyInput.Position = UDim2.new(0.1, 0, 0.3, 0)
+KeyInput.Size = UDim2.new(0.8, 0, 0, 32)
+KeyInput.Font = Enum.Font.SourceSansSemibold
+KeyInput.PlaceholderText = "ใส่คีย์ที่นี่..."
+KeyInput.PlaceholderColor3 = Color3.fromRGB(150, 120, 180)
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyInput.TextSize = 13
+
+local InputCorner = Instance.new("UICorner", KeyInput)
+InputCorner.CornerRadius = UDim.new(0, 6)
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Parent = KeyFrame
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0, 0, 0.52, 0)
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Font = Enum.Font.SourceSans
+StatusLabel.Text = "กรุณาใส่คีย์เพื่อใช้งาน"
+StatusLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+StatusLabel.TextSize = 12
+
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Parent = KeyFrame
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 220)
+SubmitBtn.Position = UDim2.new(0.15, 0, 0.68, 0)
+SubmitBtn.Size = UDim2.new(0.7, 0, 0, 32)
+SubmitBtn.Font = Enum.Font.SourceSansBold
+SubmitBtn.Text = "🐻‍❄️ ยืนยันคีย์ 🐻‍❄️"
+SubmitBtn.TextColor3 = Color3.fromRGB(15, 15, 30)
+SubmitBtn.TextSize = 13
+
+local SubmitCorner = Instance.new("UICorner", SubmitBtn)
+SubmitCorner.CornerRadius = UDim.new(0, 6)
+
+-- 🧁 MAIN HUB FRAME
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 10, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -160, 0.2, 0)
+MainFrame.Size = UDim2.new(0, 320, 0, 380)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false
+
+local MainCorner = Instance.new("UICorner", MainFrame)
+MainCorner.CornerRadius = UDim.new(0, 10)
+
+local MainStroke = Instance.new("UIStroke", MainFrame)
+MainStroke.Color = Color3.fromRGB(0, 243, 255)
+MainStroke.Thickness = 2
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.BackgroundColor3 = Color3.fromRGB(40, 15, 60)
+Title.Position = UDim2.new(0, 0, 0, 5)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "🐻‍❄️🧁 คัฟเค้กHUB VIP 🧁🐻‍❄️"
+Title.TextColor3 = Color3.fromRGB(0, 243, 255)
+Title.TextSize = 14
+
+-- Tab Container
+local TabBar = Instance.new("Frame")
+TabBar.Parent = MainFrame
+TabBar.BackgroundColor3 = Color3.fromRGB(15, 5, 25)
+TabBar.Position = UDim2.new(0, 8, 0, 45)
+TabBar.Size = UDim2.new(0, 85, 1, -53)
+
+local TabBarCorner = Instance.new("UICorner", TabBar)
+TabBarCorner.CornerRadius = UDim.new(0, 6)
+
+local TabList = Instance.new("UIListLayout")
+TabList.Parent = TabBar
+TabList.SortOrder = Enum.SortOrder.LayoutOrder
+TabList.Padding = UDim.new(0, 4)
+
+local ContentHolder = Instance.new("Frame")
+ContentHolder.Parent = MainFrame
+ContentHolder.BackgroundTransparency = 1
+ContentHolder.Position = UDim2.new(0, 98, 0, 45)
+ContentHolder.Size = UDim2.new(1, -106, 1, -53)
+
+local Tabs = {}
+
+local function CreateTab(tabName, isDefault)
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Parent = TabBar
+    tabBtn.BackgroundColor3 = isDefault and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(35, 15, 50)
+    tabBtn.BorderSizePixel = 0
+    tabBtn.Size = UDim2.new(1, 0, 0, 30)
+    tabBtn.Font = Enum.Font.SourceSansBold
+    tabBtn.Text = tabName
+    tabBtn.TextColor3 = isDefault and Color3.fromRGB(15, 15, 30) or Color3.fromRGB(220, 200, 255)
+    tabBtn.TextSize = 11
+
+    local tabBtnCorner = Instance.new("UICorner", tabBtn)
+    tabBtnCorner.CornerRadius = UDim.new(0, 5)
+
+    local page = Instance.new("ScrollingFrame")
+    page.Parent = ContentHolder
+    page.BackgroundTransparency = 1
+    page.Size = UDim2.new(1, 0, 1, 0)
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.ScrollBarThickness = 3
+    page.Visible = isDefault
+
+    local pageLayout = Instance.new("UIListLayout")
+    pageLayout.Parent = page
+    pageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    pageLayout.Padding = UDim.new(0, 5)
+
+    pageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        page.CanvasSize = UDim2.new(0, 0, 0, pageLayout.AbsoluteContentSize.Y + 10)
+    end)
+
+    tabBtn.MouseButton1Click:Connect(function()
+        for _, t in pairs(Tabs) do
+            t.Page.Visible = false
+            t.Button.BackgroundColor3 = Color3.fromRGB(35, 15, 50)
+            t.Button.TextColor3 = Color3.fromRGB(220, 200, 255)
+        end
+        page.Visible = true
+        tabBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+        tabBtn.TextColor3 = Color3.fromRGB(15, 15, 30)
+    end)
+
+    local tabData = {Page = page, Button = tabBtn}
+    table.insert(Tabs, tabData)
+    return page
+end
+
+local function CreateButton(parentPage, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = parentPage
+    btn.BackgroundColor3 = Color3.fromRGB(45, 20, 65)
+    btn.BorderSizePixel = 0
+    btn.Size = UDim2.new(1, 0, 0, 28)
+    btn.Font = Enum.Font.SourceSansSemibold
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 11
+
+    local corner = Instance.new("UICorner", btn)
+    corner.CornerRadius = UDim.new(0, 5)
+
+    local btnStroke = Instance.new("UIStroke", btn)
+    btnStroke.Color = Color3.fromRGB(80, 35, 120)
+    btnStroke.Thickness = 1
+
+    btn.MouseButton1Click:Connect(function() callback(btn) end)
+    return btn
+end
+
+-- 📱 ปุ่มลอย Menu
+local FloatBtn = Instance.new("TextButton")
+FloatBtn.Parent = ScreenGui
+FloatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+FloatBtn.Position = UDim2.new(0, 10, 0.35, 0)
+FloatBtn.Size = UDim2.new(0, 70, 0, 30)
+FloatBtn.Font = Enum.Font.SourceSansBold
+FloatBtn.Text = "🐻‍❄️ MENU"
+FloatBtn.TextColor3 = Color3.fromRGB(15, 15, 30)
+FloatBtn.TextSize = 11
+FloatBtn.Draggable = true
+FloatBtn.Active = true
+
+local FloatCorner = Instance.new("UICorner", FloatBtn)
+FloatCorner.CornerRadius = UDim.new(0, 8)
+
+FloatBtn.MouseButton1Click:Connect(function()
+    if not KeyFrame or not KeyFrame.Parent then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+-- 🎯 ปุ่มลอย Camlock
+local MobileCamlockBtn = Instance.new("TextButton")
+MobileCamlockBtn.Parent = ScreenGui
+MobileCamlockBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 100)
+MobileCamlockBtn.Position = UDim2.new(0.8, 0, 0.45, 0)
+MobileCamlockBtn.Size = UDim2.new(0, 55, 0, 55)
+MobileCamlockBtn.Font = Enum.Font.SourceSansBold
+MobileCamlockBtn.Text = "🎯\nOFF"
+MobileCamlockBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MobileCamlockBtn.TextSize = 12
+MobileCamlockBtn.Draggable = true
+MobileCamlockBtn.Active = true
+
+local MobileLockCorner = Instance.new("UICorner", MobileCamlockBtn)
+MobileLockCorner.CornerRadius = UDim.new(1, 0)
+
+local function ToggleCamlockState()
+    Config.Camlock = not Config.Camlock
+    if Config.Camlock then
+        MobileCamlockBtn.BackgroundColor3 = Color3.fromRGB(0, 243, 255)
+        MobileCamlockBtn.TextColor3 = Color3.fromRGB(15, 15, 30)
+        MobileCamlockBtn.Text = "🎯\nON"
+    else
+        MobileCamlockBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 100)
+        MobileCamlockBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        MobileCamlockBtn.Text = "🎯\nOFF"
+    end
+end
+
+MobileCamlockBtn.MouseButton1Click:Connect(ToggleCamlockState)
+
+-- Key Logic
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == Config.CorrectKey then
+        StatusLabel.Text = "✅ คีย์ถูกต้อง! ยินดีต้อนรับ"
+        StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+        task.wait(0.6)
+        KeyFrame:Destroy()
+        MainFrame.Visible = true
+    else
+        StatusLabel.Text = "❌ คีย์ไม่ถูกต้อง!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+-- TABS
+local CombatTab   = CreateTab("⚔️ Combat", true)
+local VisualsTab  = CreateTab("🚀 Visuals", false)
+local TeleportTab = CreateTab("👥 Teleport", false)
+
+-- COMBAT & HITBOX CONTROLS
+CreateButton(CombatTab, "🎯 เปิด/ปิด Camlock", ToggleCamlockState)
+
+CreateButton(CombatTab, "⭕ แสดง FOV : [ ON ]", function(btn)
+    Config.ShowFOV = not Config.ShowFOV
+    FOVCircle.Visible = Config.ShowFOV
+    btn.Text = Config.ShowFOV and "⭕ แสดง FOV : [ ON ]" or "⭕ แสดง FOV : [ OFF ]"
+end)
+
+CreateButton(CombatTab, "➕ ขยาย FOV (+15)", function()
+    if Config.FOVRadius < 350 then
+        Config.FOVRadius = Config.FOVRadius + 15
+        FOVCircle.Radius = Config.FOVRadius
+    end
+end)
+
+CreateButton(CombatTab, "➖ ลด FOV (-15)", function()
+    if Config.FOVRadius > 30 then
+        Config.FOVRadius = Config.FOVRadius - 15
+        FOVCircle.Radius = Config.FOVRadius
+    end
+end)
+
+CreateButton(CombatTab, "📦 Hitbox : [ OFF ]", function(btn)
+    Config.Hitbox = not Config.Hitbox
+    btn.Text = Config.Hitbox and "📦 Hitbox : [ ON ]" or "📦 Hitbox : [ OFF ]"
+    btn.BackgroundColor3 = Config.Hitbox and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(45, 20, 65)
+    btn.TextColor3 = Config.Hitbox and Color3.fromRGB(15, 15, 30) or Color3.fromRGB(255, 255, 255)
+end)
+
+-- 🎯 แสดงและปรับขนาด Hitbox
+local HitboxLabel = Instance.new("TextLabel")
+HitboxLabel.Parent = CombatTab
+HitboxLabel.BackgroundColor3 = Color3.fromRGB(35, 15, 50)
+HitboxLabel.BorderSizePixel = 0
+HitboxLabel.Size = UDim2.new(1, 0, 0, 24)
+HitboxLabel.Font = Enum.Font.SourceSansBold
+HitboxLabel.Text = "ขนาด Hitbox : " .. tostring(Config.HitboxSize)
+HitboxLabel.TextColor3 = Color3.fromRGB(0, 243, 255)
+HitboxLabel.TextSize = 11
+
+local HitboxCorner = Instance.new("UICorner", HitboxLabel)
+HitboxCorner.CornerRadius = UDim.new(0, 5)
+
+CreateButton(CombatTab, "➕ เพิ่มขนาด Hitbox (+2)", function()
+    if Config.HitboxSize < 50 then
+        Config.HitboxSize = Config.HitboxSize + 2
+        HitboxLabel.Text = "ขนาด Hitbox : " .. tostring(Config.HitboxSize)
+    end
+end)
+
+CreateButton(CombatTab, "➖ ลดขนาด Hitbox (-2)", function()
+    if Config.HitboxSize > 2 then
+        Config.HitboxSize = Config.HitboxSize - 2
+        HitboxLabel.Text = "ขนาด Hitbox : " .. tostring(Config.HitboxSize)
+    end
+end)
+
+CreateButton(CombatTab, "⚡ ความเร็วเดิน : 16", function(btn)
+    Config.WalkSpeed = Config.WalkSpeed + 20
+    if Config.WalkSpeed > 140 then Config.WalkSpeed = 16 end
+    btn.Text = "⚡ ความเร็วเดิน : " .. tostring(Config.WalkSpeed)
+end)
+
+-- VISUALS
+CreateButton(VisualsTab, "🚀 Boost FPS (ลดกระตุก)", function(btn)
+    Lighting.GlobalShadows = false
+    settings().Rendering.QualityLevel = 1
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("BasePart") then obj.Material = Enum.Material.SmoothPlastic
+        elseif obj:IsA("Decal") or obj:IsA("Texture") then obj:Destroy() end
+    end
+    btn.Text = "✅ Boost FPS สำเร็จ!"
+end)
+
+CreateButton(VisualsTab, "👁 ESP มองทะลุ : [ OFF ]", function(btn)
+    Config.ESP = not Config.ESP
+    btn.Text = Config.ESP and "👁️ ESP มองทะลุ : [ ON ]" or "👁️️ ESP มองทะลุ : [ OFF ]"
+end)
+
+-- TELEPORT
+CreateButton(TeleportTab, "🔄 รีเซิร์ฟเวอร์ (Rejoin)", function()
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+end)
+
+-- Engine Loop
+local function GetClosestPlayerInFOV()
+    local closestPlayer = nil
+    local shortestDistance = Config.FOVRadius
+    local viewportCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") and plr.Character:FindFirstChildOfClass("Humanoid").Health > 0 then
+            local pos, onScreen = Camera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
+            if onScreen then
+                local distance = (Vector2.new(pos.X, pos.Y) - viewportCenter).Magnitude
+                if distance <= shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = plr
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+RunService.RenderStepped:Connect(function()
+    FOVCircle.Position = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    
+    if Config.Camlock then
+        local targetPlr = GetClosestPlayerInFOV()
+        if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("Head") then
+            local targetHead = targetPlr.Character.Head
+            local targetCFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
+            Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, Config.CamlockSmoothness)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.2) do
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid").WalkSpeed = Config.WalkSpeed
+            end
+
+            for _, plr in pairs(Players:GetPlayers()) do
+                if plr ~= LocalPlayer and plr.Character then
+                    local pChar = plr.Character
+                    local highlight = pChar:FindFirstChild("Simple_ESP")
+                    if Config.ESP then
+                        if not highlight then
+                            highlight = Instance.new("Highlight", pChar)
+                            highlight.Name = "Simple_ESP"
+                        end
+                    else
+                        if highlight then highlight:Destroy() end
+                    end
+
+                    local head = pChar:FindFirstChild("Head")
+                    if head then
+                        if Config.Hitbox then
+                            head.Size = Vector3.new(Config.HitboxSize, Config.HitboxSize, Config.HitboxSize)
+                            head.Transparency = 0.5
+                            head.CanCollide = false
+                        else
+                            head.Size = Vector3.new(1.2, 1.2, 1.2)
+                            head.Transparency = 0
+                        end
+                    end
+                end
+            end
+        end)
+    end
+end)
